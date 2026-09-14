@@ -500,8 +500,24 @@
 
 
 
-
-
+# Aaj ka learning order
+# 1. def
+#    ↓
+# 2. Function call
+#    ↓
+# 3. Parameters
+#    ↓
+# 4. Arguments
+#    ↓
+# 5. return
+#    ↓
+# 6. Default parameters
+#    ↓
+# 7. Conditions inside functions
+#    ↓
+# 8. Lists + Functions
+#    ↓
+# 9. Security functions
 
 
 
