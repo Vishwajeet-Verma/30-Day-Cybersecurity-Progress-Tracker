@@ -9,6 +9,10 @@
 # Strength categories defined: Weak, Medium, Strong
 
 
+
+from getpass import getpass
+
+
 def has_min_length(password):
     return len(password) >= 8
 
@@ -58,17 +62,21 @@ def get_password_strength(results):
 
 
 if __name__ == "__main__":
-    password = input("Enter a test password: ")
+    password = getpass("Enter a test password: ")
 
     results = validate_password(password)
     strength = get_password_strength(results)
 
     print("\n--- Password Validation Results ---\n")
 
+    print(f"Your Entered Password is: {password}\n")
+
     for check, passed in results.items():
         print(f"{check}: {'PASS' if passed else 'FAIL'}")
 
-    print(f"\nPassword Strength: {strength}")
+
+
+    print(f"\nPassword Strength: {strength}\n")
 
     # Never print or log the actual password.
     del password
