@@ -1,0 +1,11 @@
+==================================================
+         SYSTEM INFORMATION REPORT
+==================================================
+Hostname        : ABCDE
+Current User    : USERA
+Operating System: Windows 11
+Kernel Version  : 10
+IP Address      : xxx.xxx.xxx.xxx
+Disk Usage      : Total: X GB | Used: X GB | Free: X GB
+Memory Usage    : Total: X MB | Used: X MB | Available: X MB
+==================================================
