@@ -4,6 +4,44 @@ import platform
 import shutil
 import socket
 import os
+import subprocess
+
+
+def run_safe_command(args, timeout=3):
+    """Run only allowlisted, read-only system commands."""
+    allowed_commands = {"uname", "hostname"}
+
+    if not isinstance(args, list) or not args:
+        return None
+
+    if args[0] not in allowed_commands:
+        print("Blocked: command is not allowed.")
+        return None
+
+    try:
+        result = subprocess.run(
+            args,
+            shell=False,
+            capture_output=True,
+            text=True,
+            timeout=timeout,
+            check=False
+        )
+
+        if result.returncode != 0:
+            return None
+
+        output = result.stdout.strip()
+        return output if output else None
+
+    except FileNotFoundError:
+        print(f"Command not found: {args[0]}")
+    except subprocess.TimeoutExpired:
+        print(f"Command timed out: {args[0]}")
+    except OSError as error:
+        print(f"Could not run command: {error}")
+
+    return None
 
 
 def get_hostname():
@@ -11,11 +49,25 @@ def get_hostname():
 
 
 def get_current_user():
-    return getpass.getuser()
+    try:
+        return getpass.getuser()
+    except (OSError, KeyError):
+        return "Unable to determine current user"
 
 
 def get_os_info():
     return f"{platform.system()} {platform.release()}"
+
+
+def get_kernel_info():
+    # uname is available on Linux and most Unix-like systems.
+    if platform.system() == "Linux":
+        kernel = run_safe_command(["uname", "-r"])
+        if kernel:
+            return kernel
+
+    # Fallback if uname is unavailable or fails.
+    return platform.release() or "Unavailable"
 
 
 def get_ip_address():
@@ -36,17 +88,20 @@ def get_ip_address():
 
 
 def get_disk_info():
-    usage = shutil.disk_usage(os.path.abspath(os.sep))
+    try:
+        usage = shutil.disk_usage(os.path.abspath(os.sep))
 
-    total_gb = usage.total / (1024 ** 3)
-    used_gb = usage.used / (1024 ** 3)
-    free_gb = usage.free / (1024 ** 3)
+        total_gb = usage.total / (1024 ** 3)
+        used_gb = usage.used / (1024 ** 3)
+        free_gb = usage.free / (1024 ** 3)
 
-    return (
-        f"Total: {total_gb:.2f} GB | "
-        f"Used: {used_gb:.2f} GB | "
-        f"Free: {free_gb:.2f} GB"
-    )
+        return (
+            f"Total: {total_gb:.2f} GB | "
+            f"Used: {used_gb:.2f} GB | "
+            f"Free: {free_gb:.2f} GB"
+        )
+    except OSError:
+        return "Unable to read disk information"
 
 
 def get_memory_info():
@@ -107,7 +162,7 @@ def get_memory_info():
                 )
 
         except (AttributeError, OSError):
-            pass
+            return "Unable to read memory information"
 
     return "Memory information not supported on this OS"
 
@@ -117,16 +172,23 @@ def main():
     print("         SYSTEM INFORMATION REPORT")
     print("=" * 50)
 
-    print(f"Hostname       : {get_hostname()}")
-    print(f"Current User   : {get_current_user()}")
+    try:
+        print(f"Hostname        : {get_hostname()}")
+    except OSError:
+        print("Hostname        : Unavailable")
+
+    print(f"Current User    : {get_current_user()}")
     print(f"Operating System: {get_os_info()}")
-    print(f"Kernel Version : {platform.release()}")
-    print(f"IP Address     : {get_ip_address()}")
-    print(f"Disk Usage     : {get_disk_info()}")
-    print(f"Memory Usage   : {get_memory_info()}")
+    print(f"Kernel Version  : {get_kernel_info()}")
+    print(f"IP Address      : {get_ip_address()}")
+    print(f"Disk Usage      : {get_disk_info()}")
+    print(f"Memory Usage    : {get_memory_info()}")
 
     print("=" * 50)
 
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except KeyboardInterrupt:
+        print("\nSystem information check cancelled safely.")
