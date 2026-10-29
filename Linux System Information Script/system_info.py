@@ -5,6 +5,11 @@ import shutil
 import socket
 import os
 import subprocess
+from pathlib import Path
+
+
+# Save the report in the same directory as this Python script.
+REPORT_FILE = Path(__file__).resolve().parent / "sample_output.txt"
 
 
 def run_safe_command(args, timeout=3):
@@ -45,7 +50,10 @@ def run_safe_command(args, timeout=3):
 
 
 def get_hostname():
-    return socket.gethostname()
+    try:
+        return socket.gethostname()
+    except OSError:
+        return "Unable to determine hostname"
 
 
 def get_current_user():
@@ -60,13 +68,11 @@ def get_os_info():
 
 
 def get_kernel_info():
-    # uname is available on Linux and most Unix-like systems.
     if platform.system() == "Linux":
         kernel = run_safe_command(["uname", "-r"])
         if kernel:
             return kernel
 
-    # Fallback if uname is unavailable or fails.
     return platform.release() or "Unavailable"
 
 
@@ -78,11 +84,13 @@ def get_ip_address():
         # No application data is sent.
         sock.connect(("8.8.8.8", 80))
         return sock.getsockname()[0]
+
     except OSError:
         try:
             return socket.gethostbyname(socket.gethostname())
         except OSError:
             return "Unable to determine IP address"
+
     finally:
         sock.close()
 
@@ -100,6 +108,7 @@ def get_disk_info():
             f"Used: {used_gb:.2f} GB | "
             f"Free: {free_gb:.2f} GB"
         )
+
     except OSError:
         return "Unable to read disk information"
 
@@ -124,6 +133,7 @@ def get_memory_info():
                 f"Used: {used / 1024:.2f} MB | "
                 f"Available: {available / 1024:.2f} MB"
             )
+
         except (OSError, KeyError, ValueError):
             return "Unable to read memory information"
 
@@ -164,27 +174,52 @@ def get_memory_info():
         except (AttributeError, OSError):
             return "Unable to read memory information"
 
+        return "Unable to read memory information"
+
     return "Memory information not supported on this OS"
 
 
-def main():
-    print("=" * 50)
-    print("         SYSTEM INFORMATION REPORT")
-    print("=" * 50)
+def generate_report():
+    """Collect system information and format it as a report."""
+    lines = [
+        "=" * 50,
+        "         SYSTEM INFORMATION REPORT",
+        "=" * 50,
+        f"Hostname        : {get_hostname()}",
+        f"Current User    : {get_current_user()}",
+        f"Operating System: {get_os_info()}",
+        f"Kernel Version  : {get_kernel_info()}",
+        f"IP Address      : {get_ip_address()}",
+        f"Disk Usage      : {get_disk_info()}",
+        f"Memory Usage    : {get_memory_info()}",
+        "=" * 50,
+    ]
 
+    return "\n".join(lines)
+
+
+def save_report(report):
+    """Save the report automatically beside this Python script."""
     try:
-        print(f"Hostname        : {get_hostname()}")
-    except OSError:
-        print("Hostname        : Unavailable")
+        with REPORT_FILE.open("w", encoding="utf-8") as file:
+            file.write(report + "\n")
 
-    print(f"Current User    : {get_current_user()}")
-    print(f"Operating System: {get_os_info()}")
-    print(f"Kernel Version  : {get_kernel_info()}")
-    print(f"IP Address      : {get_ip_address()}")
-    print(f"Disk Usage      : {get_disk_info()}")
-    print(f"Memory Usage    : {get_memory_info()}")
+        print(f"\nReport saved successfully: {REPORT_FILE.name}")
+        return True
 
-    print("=" * 50)
+    except OSError as error:
+        print(f"\nCould not save report: {error}")
+        return False
+
+
+def main():
+    report = generate_report()
+
+    # Display the report in the terminal.
+    print(report)
+
+    # Automatically create or update sample_output.txt.
+    save_report(report)
 
 
 if __name__ == "__main__":

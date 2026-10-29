@@ -1,11 +1,11 @@
 ==================================================
          SYSTEM INFORMATION REPORT
 ==================================================
-Hostname        : ABCDE
-Current User    : USERA
-Operating System: Windows 11
+Hostname        : MCAL532
+Current User    : vishwajeet
+Operating System: Windows 10
 Kernel Version  : 10
-IP Address      : xxx.xxx.xxx.xxx
-Disk Usage      : Total: X GB | Used: X GB | Free: X GB
-Memory Usage    : Total: X MB | Used: X MB | Available: X MB
+IP Address      : 192.160.108.210
+Disk Usage      : Total: 386.99 GB | Used: 157.14 GB | Free: 229.84 GB
+Memory Usage    : Total: 16078.91 MB | Used: 9081.12 MB | Available: 6997.80 MB
 ==================================================
